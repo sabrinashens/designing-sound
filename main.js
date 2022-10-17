@@ -6,13 +6,21 @@ var btnState2 = false;
 document.addEventListener("DOMContentLoaded", function (event) {
 
     var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    var gainBubble = {};
-    var gainFire = {};
     
-    ////////////////////Bubbling////////////////////
+    //babbling
+    var gainBubble = {};
+
+    //fire
+    var gainHiss = {};
+    var gainLap = {};
+    var gainCrackle1 = {};
+    var gainCrackle2 = {};
+    
+    ////////////////////babbling////////////////////
     button.addEventListener("click", function () {
         if (btnState == false) {
-          	var Brown = BrownNoise();
+          	var Brown1 = BrownNoise();
+            var Brown2 = BrownNoise();
             
             var LPF1 = audioCtx.createBiquadFilter();
             LPF1.type = "lowpass";
@@ -33,8 +41,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
             var LPF2gain = audioCtx.createGain();
             LPF2gain.gain.value = 1000;
 
-            Brown.connect(LPF1).connect(RHPF).connect(RHPFgain).connect(audioCtx.destination);
-            Brown.connect(LPF2).connect(LPF2gain).connect(RHPF.frequency);
+            Brown1.connect(LPF1).connect(RHPF).connect(RHPFgain).connect(audioCtx.destination);
+            Brown2.connect(LPF2).connect(LPF2gain).connect(RHPF.frequency);
 
             gainBubble = RHPFgain;
             btnState = true;
@@ -77,42 +85,27 @@ document.addEventListener("DOMContentLoaded", function (event) {
     
     ////////////////////fire////////////////////
     button2.addEventListener("click", function () {
-        if (btnState2 == false) {
-           /*
-            var noise = WhiteNoise();
-            var hissing = Hissing();
-            var crackling = Crackling();
-            var lapping = Lapping();
-            
-            const gain1 = audioCtx.createGain();
-            gain1.gain.value = 0.2;
-            
-            const gain2 = audioCtx.createGain();
-            gain2.gain.value = 0.3;
-            
-            const gain3 = audioCtx.createGain();
-            gain3.gain.value = 0.6;
-            
-            noise.connect(hissing).connect(gain1);
-            noise.connect(crackling).connect(gain2);
-            noise.connect(lapping).connect(gain3);
-            noise.connect(audioCtx.destination);
-            
-            return noise;
-            */
+        if (btnState2 == false) {	
+			onefireGenerator();
             btnState2 = true;
 		}
         
         else if (btnState2 == true) {
-            gainFire.gain.linearRampToValueAtTime(gainFire.gain.value, audioCtx.currentTime);
-            gainFire.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.1);
+			gainHiss.gain.linearRampToValueAtTime(gainHiss.gain.value, audioCtx.currentTime);
+            gainHiss.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.1);
+            
+            gainLap.gain.linearRampToValueAtTime(gainLap.gain.value, audioCtx.currentTime);
+            gainLap.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.1);
+            
+            gainCrackle1.gain.cancelScheduledValues(audioCtx.currentTime);
+            gainCrackle2.gain.cancelScheduledValues(audioCtx.currentTime);
+            
             btnState2 = false;
         }
-
     });
 
    
-   // a buffer of white noise
+    // a buffer of white noise
     function WhiteNoise() {
         var bufferSize = 2 * audioCtx.sampleRate,
         noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate),
@@ -132,55 +125,92 @@ document.addEventListener("DOMContentLoaded", function (event) {
     
     //Hissing
     function Hissing() {
+				
         var noise = WhiteNoise();
-            
-        var Lop = audioCtx.createBiquadFilter();
-        Lop.type = "lowpass";
-        Lop.frequency.value = 1;
-        noise.connect(Lop);
-            
-        const gain1 = audioCtx.createGain();
-        gain1.gain.value = 10;
-        Lop.connect(gain1);
-            
-        const gain2 = audioCtx.createGain();
-        gain2.gain.value = 0;
-        gain1.connect(gain2);
-            
-        const gain3 = audioCtx.createGain();
-        gain3.gain.value = 0;
-        gain2.connect(gain3);
-            
-        const gain4 = audioCtx.createGain();
-        gain4.gain.value = 600;
-        gain3.connect(gain4);
-            
-        const gain = audioCtx.createGain();
-        gain3.gain.value = 0;
-        gain4.connect(gain);
-            
-        var Hip = audioCtx.createBiquadFilter();
-        Hip.type = "highpass";
-        Hip.frequency.value = 1000;
-            
-        noise.connect(Hip).connect(gain).connect(audioCtx.destination);
-            
-        gainFire = gain;
-    }
-    
-    
-    
-    //Crackling
-    function Crackling() {
-    	var noise = WhiteNoise();
         
         var Lop = audioCtx.createBiquadFilter();
         Lop.type = "lowpass";
         Lop.frequency.value = 1;
-        noise.connect(Lop);
+        const lopGain = audioCtx.createGain();
+        lopGain.gain.value = 10;  
 
+        const gain1 = audioCtx.createGain();
+        gain1.gain.value = 0;   
+        const gain2 = audioCtx.createGain();
+        gain2.gain.value = 0;   
+        const makeupGain = audioCtx.createGain();
+        makeupGain.gain.value = 600;
+
+        const gain = audioCtx.createGain(); 
+        gain.gain.value = 0.01;
+        var Hip = audioCtx.createBiquadFilter();
+        Hip.type = "highpass";
+        Hip.frequency.value = 1000; 
+            
+        noise.connect(Hip)
+        	 .connect(gain)
+             .connect(audioCtx.destination);
+        noise.connect(Lop)
+        	 .connect(lopGain)
+             .connect(gain1)
+             .connect(gain2)
+             .connect(makeupGain)
+             .connect(gain);
+        
+        gainHiss = gain;
     }
     
+    
+    //Crackling
+    function Crackling1() {
+    	var noise = WhiteNoise();
+
+		const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0, audioCtx.currentTime);
+       
+        //create a random floating point number btw 0 and 1
+        let time = Math.random(); 
+   
+        //repeating crackles
+        for (let i = 0; i < 100; i++) {
+            //a tight envelope of 20ms
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime + 4*i + time);
+            gain.gain.setTargetAtTime(0.05, audioCtx.currentTime + 4*i + time, 0.02) ;
+            gain.gain.setValueAtTime(0, audioCtx.currentTime + 4*i + time + 0.02);
+            gain.gain.setTargetAtTime(0, audioCtx.currentTime + 4*i + time + 0.02, 4 - time - 0.02);   
+        }
+        
+        noise.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        gainCrackle1 = gain;
+    }
+    
+
+    function Crackling2() {
+    	var noise = WhiteNoise();
+
+		const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0, audioCtx.currentTime);
+       
+        //create a random floating point number btw 0 and 1
+        let time = Math.random(); 
+   
+        //repeating crackles
+        for (let i = 0; i < 100; i++) {
+            
+            //a tight envelope of 10ms
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime + 10*i + time);
+            gain.gain.setTargetAtTime(0.1, audioCtx.currentTime + 10*i + time, 0.01) ;
+            gain.gain.setValueAtTime(0, audioCtx.currentTime + 10*i + time + 0.01);
+            gain.gain.setTargetAtTime(0, audioCtx.currentTime + 10*i + time + 0.01, 10 - time - 0.01);   
+        }
+        
+        noise.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        gainCrackle2 = gain;
+    }
     
     
     //Lapping
@@ -190,37 +220,45 @@ document.addEventListener("DOMContentLoaded", function (event) {
         const bp = audioCtx.createBiquadFilter();
         bp.type = "bandpass";
         bp.frequency.value = 30;
-        bp.Q.value = 5;
+        bp.Q.value = 5; 
         
-        const gain1 = audioCtx.createGain();
-        gain1.gain.value = 100;
+        const bpGain = audioCtx.createGain();
+        bpGain.gain.value = 100; 
         
         var Hip1 = audioCtx.createBiquadFilter();
         Hip1.type = "highpass";
         Hip1.frequency.value = 25;
         
-        const Clip = new WaveShaperNode(audioCtx);
-        var level = new Float32Array(2);
-        level[0] = -0.9;
-        level[1] = 0.9;
-        Clip.curve = level;
+        //distortion is introduced here
+        const Clip = audioCtx.createWaveShaper();
+        var distortion = new Float32Array(2);
+        distortion[0] = -0.9;
+        distortion[1] = 0.9;
+        Clip.curve = distortion;
         
         var Hip2 = audioCtx.createBiquadFilter();
         Hip2.type = "highpass";
         Hip2.frequency.value = 25;
         
-        const gain2 = audioCtx.createGain();
-        gain2.gain.value = 0.6;
+        const gain = audioCtx.createGain();
+        gain.gain.value = 0.08;
         
         noise.connect(bp)
-        	 .connect(gain1)
+        	 .connect(bpGain)
         	 .connect(Hip1)
              .connect(Clip)
              .connect(Hip2)
-             .connect(gain2)
+             .connect(gain)
              .connect(audioCtx.destination);
              
-        gainFire = gain2;
+        gainLap = gain;
+    }
+    
+    function onefireGenerator() {
+         Hissing();
+         Lapping();
+         Crackling1();
+         Crackling2();
     }
     
 })
