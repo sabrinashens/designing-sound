@@ -124,9 +124,9 @@ document.addEventListener("DOMContentLoaded", function (event) {
     }
     
     //Hissing
-    function Hissing() {
-				
-        var noise = WhiteNoise();
+    function Hissing() {	
+        var noise1 = WhiteNoise();
+        var noise2 = WhiteNoise();
         
         var Lop = audioCtx.createBiquadFilter();
         Lop.type = "lowpass";
@@ -138,10 +138,10 @@ document.addEventListener("DOMContentLoaded", function (event) {
         Hip.type = "highpass";
         Hip.frequency.value = 1000; 
             
-        noise.connect(Hip)
+        noise1.connect(Hip)
         	 .connect(gain)
              .connect(audioCtx.destination);
-        noise.connect(Lop)
+        noise2.connect(Lop)
              .connect(gain);
         
         gainHiss = gain;
