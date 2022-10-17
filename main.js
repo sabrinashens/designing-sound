@@ -131,15 +131,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
         var Lop = audioCtx.createBiquadFilter();
         Lop.type = "lowpass";
         Lop.frequency.value = 1;
-        const lopGain = audioCtx.createGain();
-        lopGain.gain.value = 10;  
-
-        const gain1 = audioCtx.createGain();
-        gain1.gain.value = 0;   
-        const gain2 = audioCtx.createGain();
-        gain2.gain.value = 0;   
-        const makeupGain = audioCtx.createGain();
-        makeupGain.gain.value = 600;
 
         const gain = audioCtx.createGain(); 
         gain.gain.value = 0.01;
@@ -151,10 +142,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
         	 .connect(gain)
              .connect(audioCtx.destination);
         noise.connect(Lop)
-        	 .connect(lopGain)
-             .connect(gain1)
-             .connect(gain2)
-             .connect(makeupGain)
              .connect(gain);
         
         gainHiss = gain;
@@ -168,12 +155,9 @@ document.addEventListener("DOMContentLoaded", function (event) {
 		const gain = audioCtx.createGain();
         gain.gain.setValueAtTime(0, audioCtx.currentTime);
        
-        //create a random floating point number btw 0 and 1
         let time = Math.random(); 
    
-        //repeating crackles
         for (let i = 0; i < 100; i++) {
-            //a tight envelope of 20ms
             gain.gain.setValueAtTime(0.05, audioCtx.currentTime + 4*i + time);
             gain.gain.setTargetAtTime(0.05, audioCtx.currentTime + 4*i + time, 0.02) ;
             gain.gain.setValueAtTime(0, audioCtx.currentTime + 4*i + time + 0.02);
@@ -193,13 +177,9 @@ document.addEventListener("DOMContentLoaded", function (event) {
 		const gain = audioCtx.createGain();
         gain.gain.setValueAtTime(0, audioCtx.currentTime);
        
-        //create a random floating point number btw 0 and 1
         let time = Math.random(); 
    
-        //repeating crackles
         for (let i = 0; i < 100; i++) {
-            
-            //a tight envelope of 10ms
             gain.gain.setValueAtTime(0.1, audioCtx.currentTime + 10*i + time);
             gain.gain.setTargetAtTime(0.1, audioCtx.currentTime + 10*i + time, 0.01) ;
             gain.gain.setValueAtTime(0, audioCtx.currentTime + 10*i + time + 0.01);
@@ -229,7 +209,6 @@ document.addEventListener("DOMContentLoaded", function (event) {
         Hip1.type = "highpass";
         Hip1.frequency.value = 25;
         
-        //distortion is introduced here
         const Clip = audioCtx.createWaveShaper();
         var distortion = new Float32Array(2);
         distortion[0] = -0.9;
